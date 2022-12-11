@@ -83,7 +83,7 @@ function addchild(parent, child, type, size,   k) {
     }
 }
 
-function calcdirsizes(dir,   i,n,chld,type,sz,parent) {
+function calcdirsizes(dir,   i,n,chld,type,sz) {
     n = nchildren[dir];
     sz = 0;
     for (i = 1; i <= n; ++i) {
@@ -99,7 +99,7 @@ function calcdirsizes(dir,   i,n,chld,type,sz,parent) {
     return sz;
 }
 
-function printtree(dir,indent,    i,j,n,chld,type,name,parent) {
+function printtree(dir,indent,    i,n,chld,type) {
     printf("%*s- %s (dir, size=%d)\n", indent, "", basename(dir), sizes[dir]);    
     n = nchildren[dir];
     for (i = 1; i <= n; ++i) {
