@@ -1,13 +1,15 @@
 BEGIN {
     workdir = "";
+    TOTALSPACE = 70000000;
+    SPACENEEDED = 30000000;
 }
 # Assumptions:
 
 # 1) the input always begin wit "cd /".
 
 # 2) the "cd" changes directory by only one level, that is
-#    it is never "cd a/b" to change directory to "b" jumping
-#    over "a".
+# it is never "cd a/b" to change directory to "b" jumping
+# over "a".
 
 # 3) There is no need to process the "ls" command. The current
 #    dir is tracked by 'workdir' so the entries beginning with
@@ -38,13 +40,26 @@ BEGIN {
 
 END {
     calcdirsizes("/");
-    printtree("/", 0);
-    for (k in sizes) {
-        if (types[k] == "d" && sizes[k] <= 100000) {
-            totalsize += sizes[k];
-        }
+    #printtree("/", 0);
+    needtofree = SPACENEEDED - (TOTALSPACE - sizes["/"]);
+    found = bsearch(dirsizes, needtofree);
+    if (found < 0) {
+        found = -found; # found is negative.        
     }
-    print totalsize;
+
+    # the size at position 'found' is either equal or
+    # greater than 'needtofree'. In either case we
+    # look up for a smaller size that is equal or
+    # greater than 'needtofree'.
+    currsize = dirsizes[found];
+    for (i = found - 1; i >= 1; --i) {
+        # if this size is to small then stop.
+        if (dirsizes[i] < needtofree) {
+            break;
+        }
+        currsize = dirsizes[i];
+    }
+    print currsize;
 }
 
 function makepath(parent,child) {
@@ -96,6 +111,7 @@ function calcdirsizes(dir,   i,n,chld,type,sz) {
         }
     }
     sizes[dir] = sz;
+    insert(dirsizes, sz)
     return sz;
 }
 
@@ -111,4 +127,64 @@ function printtree(dir,indent,    i,n,chld,type) {
             printf("%*s- %s (file, size=%d)\n", indent + 4, "", chld, sizes[makepath(dir,chld)]);
         }
     }
+}
+
+function insertat(arr, e, pos) {
+     len = length(arr);
+    arr[len + 1] = e;
+    # avoid the inserting code, if e needs just
+    # to be appended
+    if (pos <= len) {
+        reverse(arr, pos);
+        reverse(arr, pos + 1);
+    }
+}
+
+function reverse(a,pos,   l,r,t) {
+    l = pos;
+    r = length(a);
+
+    while (l < r) {
+        t = a[l];
+        a[l] = a[r];
+        a[r] = t;
+        l++;
+        r--;
+    }
+}
+function insert(a, e,   pos) {
+    len = length(a);
+
+    if (len == 0) {
+        a[1] = e;
+        return;
+    }
+
+    pos = bsearch(a, e);
+    if (pos < 0) pos = -pos;
+    insertat(a, e, pos);
+}
+
+# if e is in the array, its index is returned.
+# if e is not in the array, the index at which
+# it should be inserted is returned, with
+# negative sign.
+function bsearch(a, e,   len,l,r,mid) {
+    
+    len = length(a);
+    if (len == 0) return -1;
+    
+    l = 1; r = len; 
+    while(l <= r) {
+        mid = l + int((r - l)/2);
+
+        if (e < a[mid]) {
+            r = mid - 1;
+        } else if (e > a[mid]) {
+            l = mid + 1;
+        } else {
+            return mid;
+        }
+    }
+    return -l;
 }
