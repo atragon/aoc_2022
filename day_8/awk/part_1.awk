@@ -1,3 +1,8 @@
+BEGIN {
+    LEFT = 0;
+    RIGHT = 1;
+}
+
 ## Parses each input line and builds the grid.
 {
     nx = length($0);
@@ -124,9 +129,9 @@ function findvisibletreesinarow(treeheights, y, x1, x2,    n,i,x,h,left,right) {
 
         for (i = from + 1; i <= n; ++i) {
             if (treeheights[i] < x) {
-                insert(left, treeheights[i], y);
+                insert(left, treeheights[i], y, LEFT);
             } else if (treeheights[i] > x) {
-                insert(right, treeheights[i], y);
+                insert(right, treeheights[i], y, RIGHT);
             }
         }
         
@@ -202,7 +207,7 @@ function reverse(a,pos,   l,r,t) {
     }
 }
 
-function insert(a, x, y,   pos) {
+function insert(a, x, y, xsort,   pos) {
     len = length(a)
 
     if (len == 0) {
@@ -210,12 +215,15 @@ function insert(a, x, y,   pos) {
         return;
     }
 
-    pos = bsearch(a, x, y);
+    pos = bsearch(a, x, y, xsort);
     if (pos < 0) pos = -pos;
     insertat(a, x, pos);
 }
 
-function bsearch(a, x, y,   len,l,r,mid,e,v) {
+# Finds the position in 'a' of the 'x' position of the tree height. If the
+# x value is not there, its insertion position is returned with
+# the negative sign.
+function bsearch(a, x, y, xsort,   len,l,r,mid,e,v) {
     
     len = length(a);
     if (len == 0) return -1;
@@ -230,9 +238,28 @@ function bsearch(a, x, y,   len,l,r,mid,e,v) {
         } else if (e < v) {
             l = mid + 1;
         } else {
-            return mid;
+            if (x != a[mid]) {
+                # If we are scanning the interval on the left, sort the x values
+                # that map to the same height in ascending order; so, the first
+                # one to pick from 'a' will be the leftmost. Those to the right
+                # of it are hidden anyway and there is no need to process them.
+                # If we are scanning the right interval, sort the x value in
+                # descending order, so the first one will be the rightmost in the
+                # interval.
+                # because we build the sorted x->height map by scanning the grid
+                # row (y) from left to right, that is with increasing x, then it
+                # means that the 'x' key value in 'a' cannot be greater than the
+                # 'x'; hence, we don't need to test for it.
+                if (xsort == LEFT) {
+                    l = mid + 1;
+                }
+                else if (xsort == RIGHT) {
+                    r = mid - 1;
+                }
+            } else {
+                return mid;
+            }
         }
     }
     return -l;
 }
-
