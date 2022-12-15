@@ -39,6 +39,10 @@ BEGIN {
 }
 
 END {
+    # "declares" 'dirsizes' to be an array.
+    # NOTE(atragon): This is not needed with Darwin's AWK.
+    delete dirsizes;
+
     calcdirsizes("/");
     #printtree("/", 0);
     needtofree = SPACENEEDED - (TOTALSPACE - sizes["/"]);
