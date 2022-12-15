@@ -1,8 +1,6 @@
 BEGIN {
     
-    # for part 2 just use LEN = 14
-    
-    LEN = 4; #LEN = 14; 
+    LEN = 4;
     if (getline buf > 0) {
 
         # use a four character buffer to keep the current
