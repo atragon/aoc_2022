@@ -1,6 +1,10 @@
 BEGIN {
     LEFT = 0;
     RIGHT = 1;
+
+    # "declares" 'treeheights' to be an array.
+    # NOTE(atragon): This is not needed with Darwin's AWK.
+    delete treeheights;
 }
 
 ## Parses each input line and builds the grid.
@@ -127,6 +131,10 @@ function findvisibletreesinarow(treeheights, y, x1, x2,    n,i,x,h,left,right) {
         x = treeheights[1];
         h = grid[x,y];
 
+        # "Declares" 'left' and 'right' to be arrays.
+        # NOTE(atragon): This is not needed with Darwin's AWK
+        delete left;
+        delete right;
         for (i = from + 1; i <= n; ++i) {
             if (treeheights[i] < x) {
                 insert(left, treeheights[i], y, LEFT);
